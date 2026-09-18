@@ -9,6 +9,13 @@ edition = "2024"
 name = "serde-onnx"
 version = "0.1.0"
 edition.workspace = true
+description = "Strongly typed Rust data structures for ONNX models, with export and import"
+readme = "README.md"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/neurono-ml/serde-onnx"
+documentation = "https://docs.rs/serde-onnx"
+keywords = ["onnx", "machine-learning", "serialization", "inference"]
+categories = ["data-structures", "science"]
 
 [features]
 default = []
