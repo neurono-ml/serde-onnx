@@ -31,3 +31,23 @@ proptest = "1"
 [[example]]
 name = "sklearn_scaler"
 required-features = ["export"]
+
+[[example]]
+name = "01_scaler_manual"
+required-features = ["export"]
+
+[[example]]
+name = "02_scaler_derive"
+required-features = ["export"]
+
+[[example]]
+name = "03_pipeline_imputer_scaler"
+required-features = ["export"]
+
+[[example]]
+name = "04_linear_classifier_e2e"
+required-features = ["export", "import"]
+
+[[example]]
+name = "05_import_inspect"
+required-features = ["export", "import"]
