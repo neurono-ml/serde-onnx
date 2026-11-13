@@ -8,7 +8,7 @@ rust-version = "1.85"
 
 [package]
 name = "serde-onnx"
-version = "0.1.1"
+version = "0.1.2"
 edition.workspace = true
 rust-version.workspace = true
 description = "Strongly typed Rust data structures for ONNX models, with export and import"
@@ -28,7 +28,7 @@ import = []
 half = "2"
 num-traits = "0.2"
 prost = "0.14"
-serde-onnx-macros = { path = "serde-onnx-macros", version = "0.1.1", optional = true }
+serde-onnx-macros = { path = "serde-onnx-macros", version = "0.1.2", optional = true }
 
 [build-dependencies]
 prost-build = "0.14"
