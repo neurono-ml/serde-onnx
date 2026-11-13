@@ -189,7 +189,7 @@ impl TensorType {
         }
     }
 
-    pub const fn is_scalar(&self) -> bool {
+    pub fn is_scalar(&self) -> bool {
         matches!(&self.shape, Some(s) if s.is_empty())
     }
 

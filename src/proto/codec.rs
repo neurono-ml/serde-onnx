@@ -195,18 +195,18 @@ impl TryFrom<&ModelProto> for Model {
             });
         }
         for opset in &proto.opset_import {
-            if let Some(supported) = supported_opset(&opset.domain)
-                && opset.version > supported
-            {
-                return Err(ProtoCodecError::UnsupportedOpsetVersion {
-                    domain: if opset.domain.is_empty() {
-                        "ai.onnx".to_string()
-                    } else {
-                        opset.domain.clone()
-                    },
-                    declared: opset.version,
-                    supported,
-                });
+            if let Some(supported) = supported_opset(&opset.domain) {
+                if opset.version > supported {
+                    return Err(ProtoCodecError::UnsupportedOpsetVersion {
+                        domain: if opset.domain.is_empty() {
+                            "ai.onnx".to_string()
+                        } else {
+                            opset.domain.clone()
+                        },
+                        declared: opset.version,
+                        supported,
+                    });
+                }
             }
         }
         let graph = proto
@@ -666,15 +666,14 @@ fn decode_tensor_data(elem: ElemType, proto: &TensorProto, name: &str) -> Result
             });
         }
         let data = decode_raw_data(elem, raw, name)?;
-        if let Some(n) = data.len()
-            && !proto.dims.is_empty()
-            && n != expected
-        {
-            return Err(ProtoCodecError::TensorSizeMismatch {
-                name: name.to_string(),
-                expected,
-                got: n,
-            });
+        if let Some(n) = data.len() {
+            if !proto.dims.is_empty() && n != expected {
+                return Err(ProtoCodecError::TensorSizeMismatch {
+                    name: name.to_string(),
+                    expected,
+                    got: n,
+                });
+            }
         }
         return Ok(data);
     }
@@ -766,7 +765,7 @@ fn decode_raw_data(elem: ElemType, raw: &[u8], name: &str) -> Result<TensorData>
         });
     }
     let width = raw_elem_width(elem);
-    if !raw.len().is_multiple_of(width) {
+    if raw.len() % width != 0 {
         return Err(ProtoCodecError::TensorSizeMismatch {
             name: name.to_string(),
             expected: raw.len().div_ceil(width),

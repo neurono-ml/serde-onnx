@@ -181,14 +181,14 @@ impl GraphBuilder {
         values: Vec<T>,
     ) -> Result<ValueRef, ExportError> {
         let name = name.into();
-        if let Some(expected) = fixed_len(&shape)
-            && expected != values.len()
-        {
-            return Err(ExportError::LengthMismatch {
-                name,
-                expected,
-                got: values.len(),
-            });
+        if let Some(expected) = fixed_len(&shape) {
+            if expected != values.len() {
+                return Err(ExportError::LengthMismatch {
+                    name,
+                    expected,
+                    got: values.len(),
+                });
+            }
         }
         self.claim(&name)?;
         let tensor = Tensor::new(name.clone(), T::ELEM_TYPE, shape, T::into_data(values));

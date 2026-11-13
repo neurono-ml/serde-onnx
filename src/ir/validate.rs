@@ -63,7 +63,7 @@ pub struct ValidationReport {
 }
 
 impl ValidationReport {
-    pub const fn is_ok(&self) -> bool {
+    pub fn is_ok(&self) -> bool {
         self.errors.is_empty()
     }
 
@@ -236,10 +236,10 @@ fn detect_cycle(graph: &Graph) -> Option<Vec<String>> {
             if inp.is_empty() {
                 continue;
             }
-            if let Some(&j) = index_of.get(inp.as_str())
-                && j != i
-            {
-                deps[i].push(j);
+            if let Some(&j) = index_of.get(inp.as_str()) {
+                if j != i {
+                    deps[i].push(j);
+                }
             }
         }
     }

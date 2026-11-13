@@ -43,32 +43,32 @@ impl TreeNodes {
                 });
             }
         }
-        if let Some(v) = &self.missing_value_tracks_true
-            && v.len() != n
-        {
-            return Err(OpError::InvalidValue {
-                op,
-                attr: "nodes_missing_value_tracks_true".to_string(),
-                detail: "all nodes_* arrays must share the length of nodes_modes".to_string(),
-            });
+        if let Some(v) = &self.missing_value_tracks_true {
+            if v.len() != n {
+                return Err(OpError::InvalidValue {
+                    op,
+                    attr: "nodes_missing_value_tracks_true".to_string(),
+                    detail: "all nodes_* arrays must share the length of nodes_modes".to_string(),
+                });
+            }
         }
-        if let Some(v) = &self.hitrates
-            && v.len() != n
-        {
-            return Err(OpError::InvalidValue {
-                op,
-                attr: "nodes_hitrates".to_string(),
-                detail: "all nodes_* arrays must share the length of nodes_modes".to_string(),
-            });
+        if let Some(v) = &self.hitrates {
+            if v.len() != n {
+                return Err(OpError::InvalidValue {
+                    op,
+                    attr: "nodes_hitrates".to_string(),
+                    detail: "all nodes_* arrays must share the length of nodes_modes".to_string(),
+                });
+            }
         }
-        if let Some(v) = &self.values
-            && v.len() != n
-        {
-            return Err(OpError::InvalidValue {
-                op,
-                attr: "nodes_values".to_string(),
-                detail: "all nodes_* arrays must share the length of nodes_modes".to_string(),
-            });
+        if let Some(v) = &self.values {
+            if v.len() != n {
+                return Err(OpError::InvalidValue {
+                    op,
+                    attr: "nodes_values".to_string(),
+                    detail: "all nodes_* arrays must share the length of nodes_modes".to_string(),
+                });
+            }
         }
         Ok(())
     }
@@ -160,14 +160,14 @@ impl TreeEnsembleClassifier {
                 });
             }
         }
-        if let Some(v) = &self.class_weights
-            && v.len() != n
-        {
-            return Err(OpError::InvalidValue {
-                op: OP,
-                attr: "class_weights".to_string(),
-                detail: "all class_* arrays must share the length of class_ids".to_string(),
-            });
+        if let Some(v) = &self.class_weights {
+            if v.len() != n {
+                return Err(OpError::InvalidValue {
+                    op: OP,
+                    attr: "class_weights".to_string(),
+                    detail: "all class_* arrays must share the length of class_ids".to_string(),
+                });
+            }
         }
         Ok(())
     }
@@ -285,14 +285,14 @@ impl TreeEnsembleRegressor {
                 });
             }
         }
-        if let Some(v) = &self.target_weights
-            && v.len() != n
-        {
-            return Err(OpError::InvalidValue {
-                op: OP,
-                attr: "target_weights".to_string(),
-                detail: "all target_* arrays must share the length of target_ids".to_string(),
-            });
+        if let Some(v) = &self.target_weights {
+            if v.len() != n {
+                return Err(OpError::InvalidValue {
+                    op: OP,
+                    attr: "target_weights".to_string(),
+                    detail: "all target_* arrays must share the length of target_ids".to_string(),
+                });
+            }
         }
         Ok(())
     }
