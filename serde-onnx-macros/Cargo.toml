@@ -1,6 +1,6 @@
 [package]
 name = "serde-onnx-macros"
-version = "0.1.0"
+version = "0.1.1"
 edition.workspace = true
 description = "Derive macros for serde-onnx ONNX model export"
 license = "MIT OR Apache-2.0"
