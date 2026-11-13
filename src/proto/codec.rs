@@ -433,6 +433,16 @@ fn decode_value_info(proto: &ValueInfoProto) -> Result<ValueInfo> {
 }
 
 fn decode_attribute(proto: &AttributeProto) -> Result<Attribute> {
+    let attribute_type = match attribute_proto::AttributeType::try_from(proto.r#type) {
+        Ok(attribute_type) => attribute_type,
+        Err(_) => {
+            return Err(ProtoCodecError::Protobuf(format!(
+                "attribute {:?} declares unknown attribute type {}",
+                proto.name, proto.r#type
+            )));
+        }
+    };
+
     let mut fields = AttributeFields {
         float: None,
         int: None,
@@ -445,83 +455,83 @@ fn decode_attribute(proto: &AttributeProto) -> Result<Attribute> {
         tensors: None,
         graphs: None,
     };
-    if !proto.floats.is_empty() {
-        fields.floats = Some(proto.floats.clone());
+
+    // The protobuf discriminator is authoritative: a legal attribute may carry
+    // a zero, an empty list or an empty string, so the value fields themselves
+    // can never tell which union member is populated.
+    match attribute_type {
+        attribute_proto::AttributeType::Undefined => {
+            return Err(ProtoCodecError::Protobuf(format!(
+                "attribute {:?} carries no value",
+                proto.name
+            )));
+        }
+        attribute_proto::AttributeType::Float => fields.float = Some(proto.f),
+        attribute_proto::AttributeType::Int => fields.int = Some(proto.i),
+        attribute_proto::AttributeType::String => fields.string_bytes = Some(proto.s.clone()),
+        attribute_proto::AttributeType::Tensor => match &proto.t {
+            Some(tensor) => fields.tensor = Some(decode_tensor(tensor)?),
+            None => {
+                return Err(ProtoCodecError::Protobuf(format!(
+                    "attribute {:?} declares type TENSOR but carries no tensor value",
+                    proto.name
+                )));
+            }
+        },
+        attribute_proto::AttributeType::Graph => match &proto.g {
+            Some(graph) => {
+                fields.graph = Some(GraphRef {
+                    name: graph.name.clone(),
+                    proto: graph.encode_to_vec(),
+                });
+            }
+            None => {
+                return Err(ProtoCodecError::Protobuf(format!(
+                    "attribute {:?} declares type GRAPH but carries no graph value",
+                    proto.name
+                )));
+            }
+        },
+        attribute_proto::AttributeType::Floats => fields.floats = Some(proto.floats.clone()),
+        attribute_proto::AttributeType::Ints => fields.ints = Some(proto.ints.clone()),
+        attribute_proto::AttributeType::Strings => {
+            fields.strings = Some(
+                proto
+                    .strings
+                    .iter()
+                    .map(|b| String::from_utf8_lossy(b).into_owned())
+                    .collect(),
+            );
+        }
+        attribute_proto::AttributeType::Tensors => {
+            fields.tensors = Some(
+                proto
+                    .tensors
+                    .iter()
+                    .map(decode_tensor)
+                    .collect::<core::result::Result<Vec<_>, _>>()?,
+            );
+        }
+        attribute_proto::AttributeType::Graphs => {
+            fields.graphs = Some(
+                proto
+                    .graphs
+                    .iter()
+                    .map(|graph| GraphRef {
+                        name: graph.name.clone(),
+                        proto: graph.encode_to_vec(),
+                    })
+                    .collect(),
+            );
+        }
+        unsupported => {
+            return Err(ProtoCodecError::Protobuf(format!(
+                "attribute {:?} uses attribute type {unsupported:?}, which is not supported by the decoder",
+                proto.name
+            )));
+        }
     }
-    if !proto.ints.is_empty() {
-        fields.ints = Some(proto.ints.clone());
-    }
-    if !proto.strings.is_empty() {
-        fields.strings = Some(
-            proto
-                .strings
-                .iter()
-                .map(|b| String::from_utf8_lossy(b).into_owned())
-                .collect(),
-        );
-    }
-    if let Some(t) = &proto.t {
-        fields.tensor = Some(decode_tensor(t)?);
-    }
-    if let Some(g) = &proto.g {
-        fields.graph = Some(GraphRef {
-            name: g.name.clone(),
-            proto: g.encode_to_vec(),
-        });
-    }
-    if !proto.tensors.is_empty() {
-        fields.tensors = Some(
-            proto
-                .tensors
-                .iter()
-                .map(decode_tensor)
-                .collect::<core::result::Result<Vec<_>, _>>()?,
-        );
-    }
-    if !proto.graphs.is_empty() {
-        fields.graphs = Some(
-            proto
-                .graphs
-                .iter()
-                .map(|g| GraphRef {
-                    name: g.name.clone(),
-                    proto: g.encode_to_vec(),
-                })
-                .collect(),
-        );
-    }
-    if !proto.s.is_empty() {
-        fields.string_bytes = Some(proto.s.clone());
-    }
-    if proto.f != 0.0 {
-        fields.float = Some(proto.f);
-    }
-    if proto.i != 0 {
-        fields.int = Some(proto.i);
-    }
-    if fields.float.is_some() && fields.int.is_some() {
-        return Err(ProtoCodecError::Attribute(
-            crate::ir::AttributeError::ConflictingValues {
-                name: proto.name.clone(),
-            },
-        ));
-    }
-    if fields.float.is_none()
-        && fields.int.is_none()
-        && fields.string_bytes.is_none()
-        && fields.tensor.is_none()
-        && fields.graph.is_none()
-        && fields.floats.is_none()
-        && fields.ints.is_none()
-        && fields.strings.is_none()
-        && fields.tensors.is_none()
-        && fields.graphs.is_none()
-    {
-        return Err(ProtoCodecError::Protobuf(format!(
-            "attribute {:?} carries no value",
-            proto.name
-        )));
-    }
+
     crate::ir::attribute_from_fields(proto.name.clone(), fields).map_err(ProtoCodecError::Attribute)
 }
 
