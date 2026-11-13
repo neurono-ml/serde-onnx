@@ -21,6 +21,16 @@ jobs:
       - name: test (export+import, incl. WEB models roundtrip)
         run: cargo test --features export,import -- --nocapture
 
+  msrv:
+    name: msrv (1.85)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.85
+      - uses: Swatinem/rust-cache@v2
+      - name: check (all features, all targets)
+        run: cargo check --all-features --all-targets
+
   web-models-parity:
     runs-on: ubuntu-latest
     steps:
